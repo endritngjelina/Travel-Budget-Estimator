@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Budget Estimator - Professional Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 40px;
+        }
+
+        .input-section, .results-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 25px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .slider-group {
+            margin-bottom: 25px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .slider-value {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+            padding: 0;
+            border: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+
+        .btn-calculate {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-calculate:active {
+            transform: translateY(0);
+        }
+
+        .cost-summary {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .total-cost {
+            font-size: 2.5em;
+            color: #667eea;
+            font-weight: 700;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .cost-label {
+            text-align: center;
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .breakdown-list {
+            list-style: none;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            align-items: center;
+        }
+
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .breakdown-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+        }
+
+        .icon-flight { background: #e3f2fd; }
+        .icon-hotel { background: #fff3e0; }
+        .icon-food { background: #f3e5f5; }
+        .icon-activity { background: #e8f5e9; }
+        .icon-transport { background: #fce4ec; }
+
+        .breakdown-amount {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 30px 0;
+        }
+
+        .tips-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .tips-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .tip-item {
+            padding: 8px 0;
+            color: #555;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+
+        .tip-item::before {
+            content: '💡';
+            margin-right: 8px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            padding: 12px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .comparison-mode {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .per-person {
+            color: #888;
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        .date-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ Travel Budget Estimator</h1>
+            <p>Professional Edition - Plan Your Perfect Trip with Precision</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Input Section -->
+            <div class="input-section">
+                <h2 class="section-title">Trip Configuration</h2>
+
+                <div class="form-group">
+                    <label for="destination">Destination City</label>
+                    <select id="destination">
+                        <option value="">Select a destination</option>
+                        <option value="paris">Paris, France</option>
+                        <option value="tokyo">Tokyo, Japan</option>
+                        <option value="newyork">New York, USA</option>
+                        <option value="london">London, UK</option>
+                        <option value="dubai">Dubai, UAE</option>
+                        <option value="sydney">Sydney, Australia</option>
+                        <option value="rome">Rome, Italy</option>
+                        <option value="barcelona">Barcelona, Spain</option>
+                        <option value="singapore">Singapore</option>
+                        <option value="bangkok">Bangkok, Thailand</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="departure">Departure Date</label>
+                    <input type="date" id="departure">
+                </div>
+
+                <div class="form-group">
+                    <label for="return">Return Date</label>
+                    <input type="date" id="return">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <label>Number of Travelers</label>
+                        <span class="slider-value" id="travelers-value">2</span>
+                    </div>
+                    <input type="range" id="travelers" min="1" max="10" value="2">
+                </div>
+
+                <div class="form-group">
+                    <label for="accommodation">Accommodation Type</label>
+                    <select id="accommodation">
+                        <option value="budget">Budget (Hostel/Budget Hotel)</option>
+                        <option value="standard" selected>Standard (3-Star Hotel)</option>
+                        <option value="premium">Premium (4-Star Hotel)</option>
+                        <option value="luxury">Luxury (5-Star Hotel)</option>
+                    </select>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <label>Daily Activity Budget</label>
+                        <span class="slider-value" id="activity-value">$100</span>
+                    </div>
+                    <input type="range" id="activity" min="0" max="500" value="100" step="10">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <label>Daily Food Budget</label>
+                        <span class="slider-value" id="food-value">$75</span>
+                    </div>
+                    <input type="range" id="food" min="20" max="300" value="75" step="5">
+                </div>
+
+                <div class="form-group">
+                    <label for="currency">Display Currency</label>
+                    <select id="currency">
+                        <option value="USD" selected>USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="JPY">JPY (¥)</option>
+                        <option value="AUD">AUD (A$)</option>
+                    </select>
+                </div>
+
+                <button class="btn-calculate" onclick="calculateBudget()">Calculate Budget</button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h2 class="section-title">Budget Breakdown</h2>
+
+                <div id="results-content" class="hidden">
+                    <div class="date-info" id="date-info"></div>
+
+                    <div class="cost-summary">
+                        <div class="cost-label">Total Estimated Cost</div>
+                        <div class="total-cost" id="total-cost">$0</div>
+                        <div class="per-person" id="per-person"></div>
+                        
+                        <ul class="breakdown-list">
+                            <li class="breakdown-item">
+                                <span class="breakdown-label">
+                                    <span class="breakdown-icon icon-flight">✈️</span>
+                                    Round-trip Flights
+                                </span>
+                                <span class="breakdown-amount" id="flight-cost">$0</span>
+                            </li>
+                            <li class="breakdown-item">
+                                <span class="breakdown-label">
+                                    <span class="breakdown-icon icon-hotel">🏨</span>
+                                    Accommodation
+                                </span>
+                                <span class="breakdown-amount" id="hotel-cost">$0</span>
+                            </li>
+                            <li class="breakdown-item">
+                                <span class="breakdown-label">
+                                    <span class="breakdown-icon icon-food">🍽️</span>
+                                    Food & Dining
+                                </span>
+                                <span class="breakdown-amount" id="food-cost">$0</span>
+                            </li>
+                            <li class="breakdown-item">
+                                <span class="breakdown-label">
+                                    <span class="breakdown-icon icon-activity">🎭</span>
+                                    Activities & Tours
+                                </span>
+                                <span class="breakdown-amount" id="activity-cost">$0</span>
+                            </li>
+                            <li class="breakdown-item">
+                                <span class="breakdown-label">
+                                    <span class="breakdown-icon icon-transport">🚕</span>
+                                    Local Transport
+                                </span>
+                                <span class="breakdown-amount" id="transport-cost">$0</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+
+                    <div class="tips-section">
+                        <div class="tips-title">💡 Money-Saving Tips</div>
+                        <div id="tips-content"></div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-secondary" onclick="exportBudget()">📥 Export PDF</button>
+                        <button class="btn-secondary" onclick="shareBudget()">🔗 Share</button>
+                    </div>
+                </div>
+
+                <div id="placeholder" style="text-align: center; padding: 60px 20px; color: #999;">
+                    <div style="font-size: 4em; margin-bottom: 20px;">📊</div>
+                    <div style="font-size: 1.2em;">Configure your trip details and click Calculate to see your budget breakdown</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // City-specific cost data (flight costs, accommodation multipliers, etc.)
+        const cityData = {
+            paris: { flight: 850, name: 'Paris', accomBase: 120, transportDaily: 15 },
+            tokyo: { flight: 1200, name: 'Tokyo', accomBase: 100, transportDaily: 12 },
+            newyork: { flight: 450, name: 'New York', accomBase: 180, transportDaily: 20 },
+            london: { flight: 750, name: 'London', accomBase: 150, transportDaily: 18 },
+            dubai: { flight: 950, name: 'Dubai', accomBase: 140, transportDaily: 10 },
+            sydney: { flight: 1400, name: 'Sydney', accomBase: 130, transportDaily: 15 },
+            rome: { flight: 800, name: 'Rome', accomBase: 110, transportDaily: 12 },
+            barcelona: { flight: 700, name: 'Barcelona', accomBase: 100, transportDaily: 10 },
+            singapore: { flight: 1100, name: 'Singapore', accomBase: 120, transportDaily: 8 },
+            bangkok: { flight: 900, name: 'Bangkok', accomBase: 50, transportDaily: 5 }
+        };
+
+        const accomMultipliers = {
+            budget: 0.5,
+            standard: 1.0,
+            premium: 1.8,
+            luxury: 3.5
+        };
+
+        const currencyRates = {
+            USD: 1,
+            EUR: 0.92,
+            GBP: 0.79,
+            JPY: 149.50,
+            AUD: 1.53
+        };
+
+        const currencySymbols = {
+            USD: '$',
+            EUR: '€',
+            GBP: '£',
+            JPY: '¥',
+            AUD: 'A$'
+        };
+
+        let budgetChart = null;
+
+        // Initialize date inputs with today's date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('departure').value = today;
+        const weekLater = new Date();
+        weekLater.setDate(weekLater.getDate() + 7);
+        document.getElementById('return').value = weekLater.toISOString().split('T')[0];
+
+        // Update slider values in real-time
+        document.getElementById('travelers').addEventListener('input', function() {
+            document.getElementById('travelers-value').textContent = this.value;
+        });
+
+        document.getElementById('activity').addEventListener('input', function() {
+            document.getElementById('activity-value').textContent = '$' + this.value;
+        });
+
+        document.getElementById('food').addEventListener('input', function() {
+            document.getElementById('food-value').textContent = '$' + this.value;
+        });
+
+        function calculateBudget() {
+            const destination = document.getElementById('destination').value;
+            const departure = new Date(document.getElementById('departure').value);
+            const returnDate = new Date(document.getElementById('return').value);
+            const travelers = parseInt(document.getElementById('travelers').value);
+            const accomType = document.getElementById('accommodation').value;
+            const activityBudget = parseInt(document.getElementById('activity').value);
+            const foodBudget = parseInt(document.getElementById('food').value);
+            const currency = document.getElementById('currency').value;
+
+            // Validation
+            if (!destination) {
+                alert('Please select a destination');
+                return;
+            }
+
+            if (returnDate <= departure) {
+                alert('Return date must be after departure date');
+                return;
+            }
+
+            const days = Math.ceil((returnDate - departure) / (1000 * 60 * 60 * 24));
+            const city = cityData[destination];
+
+            // Calculate costs
+            const flightCost = city.flight * travelers;
+            const hotelCostPerNight = city.accomBase * accomMultipliers[accomType];
+            const hotelCost = hotelCostPerNight * days;
+            const foodCost = foodBudget * days * travelers;
+            const activityCost = activityBudget * days * travelers;
+            const transportCost = city.transportDaily * days * travelers;
+            const totalCost = flightCost + hotelCost + foodCost + activityCost + transportCost;
+
+            // Convert to selected currency
+            const rate = currencyRates[currency];
+            const symbol = currencySymbols[currency];
+
+            const convertedTotal = totalCost * rate;
+            const convertedFlight = flightCost * rate;
+            const convertedHotel = hotelCost * rate;
+            const convertedFood = foodCost * rate;
+            const convertedActivity = activityCost * rate;
+            const convertedTransport = transportCost * rate;
+
+            // Display results
+            document.getElementById('placeholder').classList.add('hidden');
+            document.getElementById('results-content').classList.remove('hidden');
+
+            const dateInfo = `${city.name} • ${days} ${days === 1 ? 'day' : 'days'} • ${departure.toLocaleDateString()} - ${returnDate.toLocaleDateString()}`;
+            document.getElementById('date-info').textContent = dateInfo;
+
+            document.getElementById('total-cost').textContent = formatCurrency(convertedTotal, symbol, currency);
+            document.getElementById('per-person').textContent = `${formatCurrency(convertedTotal / travelers, symbol, currency)} per person`;
+            document.getElementById('flight-cost').textContent = formatCurrency(convertedFlight, symbol, currency);
+            document.getElementById('hotel-cost').textContent = formatCurrency(convertedHotel, symbol, currency);
+            document.getElementById('food-cost').textContent = formatCurrency(convertedFood, symbol, currency);
+            document.getElementById('activity-cost').textContent = formatCurrency(convertedActivity, symbol, currency);
+            document.getElementById('transport-cost').textContent = formatCurrency(convertedTransport, symbol, currency);
+
+            // Generate tips
+            generateTips(city.name, accomType, days, travelers);
+
+            // Update chart
+            updateChart(convertedFlight, convertedHotel, convertedFood, convertedActivity, convertedTransport);
+        }
+
+        function formatCurrency(amount, symbol, currency) {
+            const formatted = amount.toLocaleString('en-US', {
+                minimumFractionDigits: currency === 'JPY' ? 0 : 2,
+                maximumFractionDigits: currency === 'JPY' ? 0 : 2
+            });
+            return symbol + formatted;
+        }
+
+        function updateChart(flight, hotel, food, activity, transport) {
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            
+            if (budgetChart) {
+                budgetChart.destroy();
+            }
+
+            budgetChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Flights', 'Accommodation', 'Food & Dining', 'Activities', 'Transport'],
+                    datasets: [{
+                        data: [flight, hotel, food, activity, transport],
+                        backgroundColor: [
+                            '#2196F3',
+                            '#FF9800',
+                            '#9C27B0',
+                            '#4CAF50',
+                            '#E91E63'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    family: "'Segoe UI', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${percentage}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateTips(cityName, accomType, days, travelers) {
+            const tips = [];
+            
+            if (days > 7) {
+                tips.push('Consider booking accommodation for a week or more to get weekly discounts.');
+            }
+            
+            if (accomType === 'luxury' || accomType === 'premium') {
+                tips.push('Look for hotel packages that include breakfast to save on daily food costs.');
+            }
+
+            if (travelers > 3) {
+                tips.push('Group discounts are often available for tours and activities. Ask about them!');
+            }
+
+            tips.push(`Book flights to ${cityName} on Tuesdays or Wednesdays for better rates.`);
+            tips.push('Use local public transportation passes instead of taxis to save significantly.');
+            tips.push('Download local restaurant apps for exclusive deals and discounts.');
+
+            const tipsHtml = tips.map(tip => `<div class="tip-item">${tip}</div>`).join('');
+            document.getElementById('tips-content').innerHTML = tipsHtml;
+        }
+
+        function exportBudget() {
+            alert('Export functionality: In a production environment, this would generate a PDF report with all budget details, charts, and recommendations using libraries like jsPDF.');
+        }
+
+        function shareBudget() {
+            const destination = document.getElementById('destination').value;
+            const city = cityData[destination];
+            const total = document.getElementById('total-cost').textContent;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Travel Budget',
+                    text: `Check out my travel budget for ${city.name}: ${total}!`,
+                    url: window.location.href
+                }).catch(err => console.log('Share failed:', err));
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                const url = window.location.href;
+                navigator.clipboard.writeText(`My travel budget for ${city.name}: ${total}. Plan yours at ${url}`);
+                alert('Budget details copied to clipboard!');
+            }
+        }
+    </script>
+</body>
+</html>
