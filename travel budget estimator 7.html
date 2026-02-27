@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Budget Estimator - Professional Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            animation: gradientShift 15s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: headerGlow 8s ease-in-out infinite;
+        }
+
+        @keyframes headerGlow {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, 30px); }
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 12px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1.15em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            font-weight: 400;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 35px;
+            padding: 45px;
+            background: linear-gradient(to bottom, #fafbfc 0%, #ffffff 100%);
+        }
+
+        .input-section, .results-section {
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(102, 126, 234, 0.08);
+        }
+
+        .input-section:hover, .results-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.65em;
+            color: #1a1a2e;
+            margin-bottom: 30px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 5px;
+            height: 35px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            border-radius: 3px;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 0.95em;
+            letter-spacing: 0.2px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1em;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            background: #fafbfc;
+            color: #2d3748;
+        }
+
+        input:hover, select:hover {
+            border-color: #cbd5e0;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+            transform: translateY(-1px);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        .slider-group {
+            margin-bottom: 28px;
+            padding: 18px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #fff5f8 100%);
+            border-radius: 14px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .slider-group:hover {
+            background: linear-gradient(135deg, #f0f2ff 0%, #fff0f5 100%);
+            border-color: rgba(102, 126, 234, 0.2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.08);
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 14px;
+            align-items: center;
+        }
+
+        .slider-value {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.2em;
+            padding: 4px 12px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15);
+            min-width: 70px;
+            text-align: center;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 10px;
+            border-radius: 8px;
+            background: linear-gradient(to right, #e2e8f0 0%, #e2e8f0 100%);
+            outline: none;
+            padding: 0;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="range"]:hover {
+            background: linear-gradient(to right, #cbd5e0 0%, #cbd5e0 100%);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.6);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(1.05);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.4);
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-calculate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.15em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-calculate::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-calculate:hover::before {
+            left: 100%;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-calculate:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .cost-summary {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            padding: 30px;
+            border-radius: 18px;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.1);
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .cost-summary:hover {
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+            border-color: rgba(102, 126, 234, 0.2);
+        }
+
+        .total-cost {
+            font-size: 3em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            text-align: center;
+            margin: 25px 0;
+            letter-spacing: -1px;
+            animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .cost-label {
+            text-align: center;
+            color: #4a5568;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+
+        .breakdown-list {
+            list-style: none;
+            margin-top: 25px;
+        }
+
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 0;
+            border-bottom: 2px solid #f0f4f8;
+            align-items: center;
+            transition: all 0.3s ease;
+            animation: slideInRight 0.5s ease-out backwards;
+        }
+
+        .breakdown-item:nth-child(1) { animation-delay: 0.1s; }
+        .breakdown-item:nth-child(2) { animation-delay: 0.2s; }
+        .breakdown-item:nth-child(3) { animation-delay: 0.3s; }
+        .breakdown-item:nth-child(4) { animation-delay: 0.4s; }
+        .breakdown-item:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .breakdown-item:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.03) 0%, transparent 100%);
+            padding-left: 10px;
+            margin-left: -10px;
+            border-radius: 8px;
+        }
+
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .breakdown-label {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+
+        .breakdown-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .breakdown-item:hover .breakdown-icon {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .icon-flight { 
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        }
+        .icon-hotel { 
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+        }
+        .icon-food { 
+            background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+        }
+        .icon-activity { 
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        }
+        .icon-transport { 
+            background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+        }
+
+        .breakdown-amount {
+            font-weight: 700;
+            color: #1a202c;
+            font-size: 1.2em;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .breakdown-item:hover .breakdown-amount {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 320px;
+            margin: 35px 0;
+            padding: 25px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(102, 126, 234, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .chart-container:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .tips-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 25px;
+            border-radius: 16px;
+            margin-top: 25px;
+            border: 1px solid rgba(102, 126, 234, 0.15);
+            box-shadow: 0 3px 12px rgba(102, 126, 234, 0.08);
+            animation: fadeIn 0.6s ease-out 0.6s backwards;
+        }
+
+        .tips-title {
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 16px;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tips-title::before {
+            content: '💡';
+            font-size: 1.3em;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .tip-item {
+            padding: 12px 0;
+            color: #2d3748;
+            font-size: 0.97em;
+            line-height: 1.7;
+            border-left: 3px solid transparent;
+            padding-left: 12px;
+            margin-left: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tip-item:hover {
+            border-left-color: #667eea;
+            padding-left: 18px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .tip-item::before {
+            content: '✨';
+            margin-right: 10px;
+            font-size: 1.1em;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 25px;
+        }
+
+        .btn-secondary {
+            padding: 14px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-secondary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-secondary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        .comparison-mode {
+            background: #fff9e6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .per-person {
+            color: #718096;
+            font-size: 0.95em;
+            text-align: center;
+            margin-top: -12px;
+            margin-bottom: 18px;
+            font-weight: 500;
+        }
+
+        .date-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.05em;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            animation: fadeIn 0.5s ease-out;
+            letter-spacing: 0.3px;
+        }
+
+        #placeholder {
+            text-align: center;
+            padding: 80px 20px;
+            color: #a0aec0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        #placeholder > div:first-child {
+            font-size: 5em;
+            margin-bottom: 25px;
+            opacity: 0.6;
+        }
+
+        #placeholder > div:last-child {
+            font-size: 1.15em;
+            line-height: 1.6;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #654a8c 100%);
+        }
+
+        /* Loading animation for calculate button */
+        .btn-calculate.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn-calculate.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ Travel Budget Estimator</h1>
+            <p>Professional Edition - Plan Your Perfect Trip with Precision</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Input Section -->
+            <div class="input-section">
+                <h2 class="section-title">Trip Configuration</h2>
+
+                <div class="form-group">
+                    <label for="destination">Destination City</label>
+                    <select id="destination">
+                        <option value="">Select a destination</option>
+                        <option value="paris">Paris, France</option>
+                        <option value="tokyo">Tokyo, Japan</option>
+                        <option value="newyork">New York, USA</option>
+                        <option value="london">London, UK</option>
+                        <option value="dubai">Dubai, UAE</option>
+                        <option value="sydney">Sydney, Australia</option>
+                        <option value="rome">Rome, Italy</option>
+                        <option value="barcelona">Barcelona, Spain</option>
+                        <option value="singapore">Singapore</option>
+                        <option value="bangkok">Bangkok, Thailand</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="departure">Departure Date</label>
+                    <input type="date" id="departure">
+                </div>
+
+                <div class="form-group">
+                    <label for="return">Return Date</label>
+                    <input type="date" id="return">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <label>Number of Travelers</label>
+                        <span class="slider-value" id="travelers-value">2</span>
+                    </div>
+                    <input type="range" id="travelers" min="1" max="10" value="2">
+                </div>
+
+                <div class="form-group">
+                    <label for="accommodation">Accommodation Type</label>
+                    <select id="accommodation">
+                        <option value="budget">Budget (Hostel/Budget Hotel)</option>
+                        <option value="standard" selected>Standard (3-Star Hotel)</option>
+                        <option value="premium">Premium (4-Star Hotel)</option>
+                        <option value="luxury">Luxury (5-Star Hotel)</option>
+                    </select>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <label>Daily Activity Budget</label>
+                        <span class="slider-value" id="activity-value">$100</span>
+                    </div>
+                    <input type="range" id="activity" min="0" max="500" value="100" step="10">
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <label>Daily Food Budget</label>
+                        <span class="slider-value" id="food-value">$75</span>
+                    </div>
+                    <input type="range" id="food" min="20" max="300" value="75" step="5">
+                </div>
+
+                <div class="form-group">
+                    <label for="currency">Display Currency</label>
+                    <select id="currency">
+                        <option value="USD" selected>USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                        <option value="JPY">JPY (¥)</option>
+                        <option value="AUD">AUD (A$)</option>
+                    </select>
+                </div>
+
+                <button class="btn-calculate" onclick="calculateBudget()">Calculate Budget</button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h2 class="section-title">Budget Breakdown</h2>
+
+                <div id="results-content" class="hidden">
+                    <div class="date-info" id="date-info"></div>
+
+                    <div class="cost-summary">
+                        <div class="cost-label">Total Estimated Cost</div>
+                        <div class="total-cost" id="total-cost">$0</div>
+                        <div class="per-person" id="per-person"></div>
+                        
+                        <ul class="breakdown-list">
+                            <li class="breakdown-item">
+                                <span class="breakdown-label">
+                                    <span class="breakdown-icon icon-flight">✈️</span>
+                                    Round-trip Flights
+                                </span>
+                                <span class="breakdown-amount" id="flight-cost">$0</span>
+                            </li>
+                            <li class="breakdown-item">
+                                <span class="breakdown-label">
+                                    <span class="breakdown-icon icon-hotel">🏨</span>
+                                    Accommodation
+                                </span>
+                                <span class="breakdown-amount" id="hotel-cost">$0</span>
+                            </li>
+                            <li class="breakdown-item">
+                                <span class="breakdown-label">
+                                    <span class="breakdown-icon icon-food">🍽️</span>
+                                    Food & Dining
+                                </span>
+                                <span class="breakdown-amount" id="food-cost">$0</span>
+                            </li>
+                            <li class="breakdown-item">
+                                <span class="breakdown-label">
+                                    <span class="breakdown-icon icon-activity">🎭</span>
+                                    Activities & Tours
+                                </span>
+                                <span class="breakdown-amount" id="activity-cost">$0</span>
+                            </li>
+                            <li class="breakdown-item">
+                                <span class="breakdown-label">
+                                    <span class="breakdown-icon icon-transport">🚕</span>
+                                    Local Transport
+                                </span>
+                                <span class="breakdown-amount" id="transport-cost">$0</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+
+                    <div class="tips-section">
+                        <div class="tips-title">💡 Money-Saving Tips</div>
+                        <div id="tips-content"></div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-secondary" onclick="exportBudget()">📥 Export PDF</button>
+                        <button class="btn-secondary" onclick="shareBudget()">🔗 Share</button>
+                    </div>
+                </div>
+
+                <div id="placeholder" style="text-align: center; padding: 60px 20px; color: #999;">
+                    <div style="font-size: 4em; margin-bottom: 20px;">📊</div>
+                    <div style="font-size: 1.2em;">Configure your trip details and click Calculate to see your budget breakdown</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // City-specific cost data (flight costs, accommodation multipliers, etc.)
+        const cityData = {
+            paris: { flight: 850, name: 'Paris', accomBase: 120, transportDaily: 15 },
+            tokyo: { flight: 1200, name: 'Tokyo', accomBase: 100, transportDaily: 12 },
+            newyork: { flight: 450, name: 'New York', accomBase: 180, transportDaily: 20 },
+            london: { flight: 750, name: 'London', accomBase: 150, transportDaily: 18 },
+            dubai: { flight: 950, name: 'Dubai', accomBase: 140, transportDaily: 10 },
+            sydney: { flight: 1400, name: 'Sydney', accomBase: 130, transportDaily: 15 },
+            rome: { flight: 800, name: 'Rome', accomBase: 110, transportDaily: 12 },
+            barcelona: { flight: 700, name: 'Barcelona', accomBase: 100, transportDaily: 10 },
+            singapore: { flight: 1100, name: 'Singapore', accomBase: 120, transportDaily: 8 },
+            bangkok: { flight: 900, name: 'Bangkok', accomBase: 50, transportDaily: 5 }
+        };
+
+        const accomMultipliers = {
+            budget: 0.5,
+            standard: 1.0,
+            premium: 1.8,
+            luxury: 3.5
+        };
+
+        const currencyRates = {
+            USD: 1,
+            EUR: 0.92,
+            GBP: 0.79,
+            JPY: 149.50,
+            AUD: 1.53
+        };
+
+        const currencySymbols = {
+            USD: '$',
+            EUR: '€',
+            GBP: '£',
+            JPY: '¥',
+            AUD: 'A$'
+        };
+
+        let budgetChart = null;
+
+        // Initialize date inputs with today's date
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('departure').value = today;
+        const weekLater = new Date();
+        weekLater.setDate(weekLater.getDate() + 7);
+        document.getElementById('return').value = weekLater.toISOString().split('T')[0];
+
+        // Update slider values in real-time
+        document.getElementById('travelers').addEventListener('input', function() {
+            document.getElementById('travelers-value').textContent = this.value;
+        });
+
+        document.getElementById('activity').addEventListener('input', function() {
+            document.getElementById('activity-value').textContent = '$' + this.value;
+        });
+
+        document.getElementById('food').addEventListener('input', function() {
+            document.getElementById('food-value').textContent = '$' + this.value;
+        });
+
+        function calculateBudget() {
+            const btn = document.querySelector('.btn-calculate');
+            btn.classList.add('loading');
+            
+            // Add slight delay for better UX (shows loading animation)
+            setTimeout(() => {
+                const destination = document.getElementById('destination').value;
+                const departure = new Date(document.getElementById('departure').value);
+                const returnDate = new Date(document.getElementById('return').value);
+                const travelers = parseInt(document.getElementById('travelers').value);
+                const accomType = document.getElementById('accommodation').value;
+                const activityBudget = parseInt(document.getElementById('activity').value);
+                const foodBudget = parseInt(document.getElementById('food').value);
+                const currency = document.getElementById('currency').value;
+
+                // Validation
+                if (!destination) {
+                    alert('Please select a destination');
+                    btn.classList.remove('loading');
+                    return;
+                }
+
+                if (returnDate <= departure) {
+                    alert('Return date must be after departure date');
+                    btn.classList.remove('loading');
+                    return;
+                }
+
+                const days = Math.ceil((returnDate - departure) / (1000 * 60 * 60 * 24));
+                const city = cityData[destination];
+
+                // Calculate costs
+                const flightCost = city.flight * travelers;
+                const hotelCostPerNight = city.accomBase * accomMultipliers[accomType];
+                const hotelCost = hotelCostPerNight * days;
+                const foodCost = foodBudget * days * travelers;
+                const activityCost = activityBudget * days * travelers;
+                const transportCost = city.transportDaily * days * travelers;
+                const totalCost = flightCost + hotelCost + foodCost + activityCost + transportCost;
+
+                // Convert to selected currency
+                const rate = currencyRates[currency];
+                const symbol = currencySymbols[currency];
+
+                const convertedTotal = totalCost * rate;
+                const convertedFlight = flightCost * rate;
+                const convertedHotel = hotelCost * rate;
+                const convertedFood = foodCost * rate;
+                const convertedActivity = activityCost * rate;
+                const convertedTransport = transportCost * rate;
+
+                // Display results
+                document.getElementById('placeholder').classList.add('hidden');
+                document.getElementById('results-content').classList.remove('hidden');
+
+                const dateInfo = `${city.name} • ${days} ${days === 1 ? 'day' : 'days'} • ${departure.toLocaleDateString()} - ${returnDate.toLocaleDateString()}`;
+                document.getElementById('date-info').textContent = dateInfo;
+
+                document.getElementById('total-cost').textContent = formatCurrency(convertedTotal, symbol, currency);
+                document.getElementById('per-person').textContent = `${formatCurrency(convertedTotal / travelers, symbol, currency)} per person`;
+                document.getElementById('flight-cost').textContent = formatCurrency(convertedFlight, symbol, currency);
+                document.getElementById('hotel-cost').textContent = formatCurrency(convertedHotel, symbol, currency);
+                document.getElementById('food-cost').textContent = formatCurrency(convertedFood, symbol, currency);
+                document.getElementById('activity-cost').textContent = formatCurrency(convertedActivity, symbol, currency);
+                document.getElementById('transport-cost').textContent = formatCurrency(convertedTransport, symbol, currency);
+
+                // Generate tips
+                generateTips(city.name, accomType, days, travelers);
+
+                // Update chart
+                updateChart(convertedFlight, convertedHotel, convertedFood, convertedActivity, convertedTransport);
+                
+                btn.classList.remove('loading');
+            }, 600);
+        }
+
+        function formatCurrency(amount, symbol, currency) {
+            const formatted = amount.toLocaleString('en-US', {
+                minimumFractionDigits: currency === 'JPY' ? 0 : 2,
+                maximumFractionDigits: currency === 'JPY' ? 0 : 2
+            });
+            return symbol + formatted;
+        }
+
+        function updateChart(flight, hotel, food, activity, transport) {
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            
+            if (budgetChart) {
+                budgetChart.destroy();
+            }
+
+            budgetChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Flights', 'Accommodation', 'Food & Dining', 'Activities', 'Transport'],
+                    datasets: [{
+                        data: [flight, hotel, food, activity, transport],
+                        backgroundColor: [
+                            '#2196F3',
+                            '#FF9800',
+                            '#9C27B0',
+                            '#4CAF50',
+                            '#E91E63'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    family: "'Segoe UI', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${percentage}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateTips(cityName, accomType, days, travelers) {
+            const tips = [];
+            
+            if (days > 7) {
+                tips.push('Consider booking accommodation for a week or more to get weekly discounts.');
+            }
+            
+            if (accomType === 'luxury' || accomType === 'premium') {
+                tips.push('Look for hotel packages that include breakfast to save on daily food costs.');
+            }
+
+            if (travelers > 3) {
+                tips.push('Group discounts are often available for tours and activities. Ask about them!');
+            }
+
+            tips.push(`Book flights to ${cityName} on Tuesdays or Wednesdays for better rates.`);
+            tips.push('Use local public transportation passes instead of taxis to save significantly.');
+            tips.push('Download local restaurant apps for exclusive deals and discounts.');
+
+            const tipsHtml = tips.map(tip => `<div class="tip-item">${tip}</div>`).join('');
+            document.getElementById('tips-content').innerHTML = tipsHtml;
+        }
+
+        function exportBudget() {
+            alert('Export functionality: In a production environment, this would generate a PDF report with all budget details, charts, and recommendations using libraries like jsPDF.');
+        }
+
+        function shareBudget() {
+            const destination = document.getElementById('destination').value;
+            const city = cityData[destination];
+            const total = document.getElementById('total-cost').textContent;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Travel Budget',
+                    text: `Check out my travel budget for ${city.name}: ${total}!`,
+                    url: window.location.href
+                }).catch(err => console.log('Share failed:', err));
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                const url = window.location.href;
+                navigator.clipboard.writeText(`My travel budget for ${city.name}: ${total}. Plan yours at ${url}`);
+                alert('Budget details copied to clipboard!');
+            }
+        }
+    </script>
+</body>
+</html>
